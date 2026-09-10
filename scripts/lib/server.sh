@@ -28,7 +28,13 @@ start_server() {
   mkfifo "$dir/stdin.fifo"
   exec {SERVER_FIFO_FD}<>"$dir/stdin.fifo"
 
-  ( cd "$dir" && exec java \
+  local -a pin=()
+  if [[ -n "${SERVER_CPUS:-}" ]]; then
+    command -v taskset >/dev/null || { echo "  !! SERVER_CPUS is set but taskset is missing" >&2; return 1; }
+    pin=(taskset -c "$SERVER_CPUS")
+  fi
+
+  ( cd "$dir" && exec ${pin[@]+"${pin[@]}"} java \
       "-Xms$xmx" "-Xmx$xmx" \
       "${JVM_FLAGS_COMMON[@]}" \
       "-Dbench.out=$outdir" \
@@ -68,19 +74,19 @@ wait_for_ready() {
 }
 
 wait_for_log() {
-  local pattern="$1" timeout="$2" waited=0
+  local pattern="$1" timeout="$2" interval="${3:-2}" deadline
+  deadline=$(( $(date +%s) + timeout ))
   while ! grep -qF "$pattern" "$SERVER_LOG"; do
     if ! kill -0 "$SERVER_PID" 2>/dev/null; then
       echo "  !! server died while waiting for: $pattern" >&2
       tail -25 "$SERVER_LOG" >&2
       return 1
     fi
-    sleep 2
-    waited=$((waited + 2))
-    if (( waited > timeout )); then
+    if (( $(date +%s) > deadline )); then
       echo "  !! timed out (${timeout}s) waiting for: $pattern" >&2
       return 1
     fi
+    sleep "$interval"
   done
   return 0
 }

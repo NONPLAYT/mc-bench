@@ -89,7 +89,7 @@ run_chunkgen() {
   send_cmd "bench mark gen_start"
   send_cmd "chunky start"
 
-  wait_for_log "Task finished for" "$CHUNKGEN_TIMEOUT" || return 1
+  wait_for_log "Task finished for" "$CHUNKGEN_TIMEOUT" 0.2 || return 1
   send_cmd "bench mark gen_end"
   sleep 2
   return 0

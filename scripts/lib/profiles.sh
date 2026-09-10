@@ -3,9 +3,6 @@
 Y() { python3 "$ROOT/scripts/lib/yamlset.py" "$@"; }
 P() { python3 "$ROOT/scripts/lib/propset.py" "$@"; }
 
-CHUNK_WORKER_THREADS=6
-CHUNK_IO_THREADS=4
-
 apply_common() {
   local dir="$1" seed="$2"
   P "$dir/server.properties" \

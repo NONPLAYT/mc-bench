@@ -20,7 +20,12 @@ count_joined() {
 start_bots() {
   local outdir="$1" count="$2"
   write_account_file "$outdir/accounts.txt" "$count"
-  java -Xms2G -Xmx"$BOT_HEAP" -jar "$BOT_JAR" \
+  local -a pin=()
+  if [[ -n "${BOT_CPUS:-}" ]]; then
+    command -v taskset >/dev/null || { echo "  !! BOT_CPUS is set but taskset is missing" >&2; return 1; }
+    pin=(taskset -c "$BOT_CPUS")
+  fi
+  ${pin[@]+"${pin[@]}"} java -Xms2G -Xmx"$BOT_HEAP" -jar "$BOT_JAR" \
     --bot-address "$BOT_TARGET" \
     --account-file "$outdir/accounts.txt" --account-type OFFLINE \
     --bot-join-delay-min "$BOT_JOIN_DELAY_MIN" --bot-join-delay-max "$BOT_JOIN_DELAY_MAX" \

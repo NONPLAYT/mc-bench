@@ -41,17 +41,27 @@ scripts/aggregate.py botswarm
 | `CHUNK_WORKER_THREADS` / `CHUNK_IO_THREADS` | pinned identically on every build | 6 / 4 | 12 / 6 |
 | `RCT_THREADS` | regionised ticking workers; sweep it | 4 | 4, 8, 12 |
 | `BOT_HEAP` | bot client heap | 6144M | 12288M |
+| `SERVER_CPUS` / `BOT_CPUS` | taskset lists per JVM; see `scripts/cpu-layout.sh` | — | one CCD each |
+
+A value pinned in `bench.local.conf` also beats a command-line prefix, since that
+file is sourced last. Comment the line out before sweeping that parameter.
 
 The machine must be otherwise idle, `swapoff -a`, CPU governor `performance`.
 
 On a dual-CCD chip such as the 9950X3D only one CCD carries the extra cache, and
-letting the scheduler move the server between them adds variance. Check the
-topology with `lscpu -e` and pin the two JVMs to different CCDs, server on the
-cache-heavy one:
+letting the scheduler move the server between them adds variance. `SERVER_CPUS`
+and `BOT_CPUS` pin each JVM separately; `scripts/cpu-layout.sh` reads the L3
+topology and prints both lines ready to paste into `bench.local.conf`:
 
 ```sh
-BOT_TARGET=127.0.0.1:25565 taskset -c 0-7,16-23 scripts/run.sh botswarm   # server CCD
+scripts/cpu-layout.sh
+#   SERVER_CPUS=0-7,16-23      <- cache-heavy CCD
+#   BOT_CPUS=8-15,24-31
 ```
+
+Do not put `taskset` in front of `run.sh` instead: affinity is inherited, so that
+pins the server and the bot client to the *same* CCD, which is the opposite of
+what you want.
 
 Better still, run the bots from a second machine and point `BOT_TARGET` at this
 host. Bots cost ~8x the CPU the server does, so sharing one box means measuring

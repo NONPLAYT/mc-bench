@@ -90,12 +90,23 @@ def collect_chunkgen(cell_dir):
         }
         entry.update(cpu_between(run_dir, e0, e1) or {})
         chunks = None
+        chunky_seconds = None
         console = run_dir / "console.log"
         if console.exists():
             for line in console.read_text(encoding="utf-8", errors="replace").splitlines():
                 if "Task finished for" in line and "Processed:" in line:
                     chunks = int(line.split("Processed:")[1].split("chunks")[0].strip().replace(",", ""))
+                    if "Total time:" in line:
+                        try:
+                            secs = 0
+                            for part in line.split("Total time:")[1].strip().split(":"):
+                                secs = secs * 60 + int(part)
+                            chunky_seconds = secs
+                        except ValueError:
+                            pass
         entry["chunks"] = chunks
+        if chunky_seconds:
+            entry["chunky_seconds"] = chunky_seconds
         if chunks and entry["wall_seconds"]:
             entry["chunks_per_second"] = round(chunks / entry["wall_seconds"], 1)
         runs.append(entry)

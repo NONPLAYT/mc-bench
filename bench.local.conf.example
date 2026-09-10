@@ -1,3 +1,6 @@
+# Sourced last by bench.conf, so these win over its defaults. Note the flip side:
+# a value pinned here also beats a command-line prefix, so comment a line out
+# before sweeping that parameter (RCT_THREADS=12 scripts/run.sh rctclusters).
 BOTSWARM_BOTS=150
 CHUNK_WORKER_THREADS=12
 CHUNK_IO_THREADS=4
