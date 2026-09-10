@@ -1,0 +1,10 @@
+name: BenchAgent
+version: 1.0.0
+main: org.bxteam.bench.BenchAgent
+api-version: 1.13
+load: POSTWORLD
+description: Records per-tick durations for the fork benchmark harness
+commands:
+  bench:
+    description: Benchmark agent control
+    usage: /bench <mark <label>|reset|dump>
