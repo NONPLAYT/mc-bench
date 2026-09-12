@@ -72,6 +72,7 @@ contention rather than the server.
 ```sh
 scripts/run.sh <scenario> [--runs N] [--profiles a,b] [--builds a,b] [--radius R] [--verify]
 scripts/aggregate.py <scenario>       # -> results/<scenario>.json + a console table
+scripts/report.py results/<host>/<date>   # -> markdown tables + one CSV per scenario
 ```
 
 `--verify` applies every config profile without running anything, and fails if a
@@ -134,3 +135,10 @@ The shipped default of 150 bots targets a 16-core machine; on 6 cores use 60.
 `results/*.json` holds every individual run, not just the summary, and
 `work/raw/` holds per-tick CSVs and the full config set each run actually used.
 Publish both, show the spread, and put the CPU column next to the time column.
+
+`scripts/report.py` does the last step: point it at a directory of aggregate.py
+outputs (one per scenario, `<scenario>-<variant>.json` for a parameter sweep) and
+it writes the comparison tables against Paper stock plus a CSV of the same numbers
+for a web page. Published sets live under `results/<host>/<date>/` next to the
+`bench.local.conf` and `jars/builds.txt` of that session; `results/9950x3d/2026-09-12/`
+-> [`docs/results-9950x3d.md`](docs/results-9950x3d.md) is one.
