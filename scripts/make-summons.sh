@@ -32,6 +32,24 @@ out.write_text("\n".join(lines) + "\n")
 print(f"wrote {len(lines)} summons across {CLUSTERS} clusters")
 PY
 
+python3 - "$ROOT/work/scenarios/rct-redstone.txt" <<PY
+import sys, pathlib
+out = pathlib.Path(sys.argv[1]); out.parent.mkdir(parents=True, exist_ok=True)
+CLUSTERS, SEP, ROWS, LENGTH, Y = $RCT_CLUSTERS, $RCT_SEPARATION, $RCTBLOCKS_ROWS, $RCTBLOCKS_ROW_LENGTH, $RCTBLOCKS_Y
+lines = []
+for c in range(CLUSTERS):
+    cx, cz = (c % 4) * SEP - SEP, (c // 4) * SEP - SEP
+    z0, z1 = cz - LENGTH // 2, cz - LENGTH // 2 + LENGTH - 1
+    for r in range(ROWS):
+        x = cx - ROWS * 3 + r * 6
+        lines.append(f"fill {x - 1} {Y} {z0} {x - 1} {Y} {z1} minecraft:stone")
+        lines.append(f"fill {x} {Y} {z0} {x} {Y} {z1} minecraft:sticky_piston[facing=west]")
+        lines.append(f"fill {x + 1} {Y} {z0} {x + 1} {Y} {z1} minecraft:observer[facing=east]")
+        lines.append(f"fill {x + 2} {Y} {z0} {x + 2} {Y} {z1} minecraft:observer[facing=west]")
+out.write_text("\n".join(lines) + "\n")
+print(f"wrote {CLUSTERS * ROWS * LENGTH} observer clocks across {CLUSTERS} clusters")
+PY
+
 python3 - "$ROOT/work/scenarios/botswarm-summons.txt" <<SUMMONS
 import sys, pathlib
 out = pathlib.Path(sys.argv[1]); out.parent.mkdir(parents=True, exist_ok=True)

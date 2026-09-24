@@ -8,7 +8,7 @@ source "$ROOT/scripts/lib/bots.sh"
 
 SCENARIO="${1:-}"; shift || true
 case "$SCENARIO" in
-  rctclusters) PROFILES=(rct) ;;
+  rctclusters|rctblocks) PROFILES=(rct) ;;
   *)           PROFILES=(stock parity max) ;;
 esac
 SELECTED_BUILDS=("${BUILDS[@]}")
@@ -26,7 +26,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -n "$SCENARIO" ]] || { echo "usage: run.sh <chunkgen|entity> [--runs N] [--profiles a,b] [--builds a,b] [--radius R] [--verify]" >&2; exit 2; }
+[[ -n "$SCENARIO" ]] || { echo "usage: run.sh <chunkgen|botswarm|rctclusters|rctblocks> [--runs N] [--profiles a,b] [--builds a,b] [--radius R] [--verify]" >&2; exit 2; }
 
 MATRIX=()
 for b in "${SELECTED_BUILDS[@]}"; do
@@ -34,7 +34,7 @@ for b in "${SELECTED_BUILDS[@]}"; do
     if [[ "$p" == "max" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
     if [[ "$p" == "parity" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
     if [[ "$p" == "dfconly" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
-    if [[ "$p" == "rct" && "$b" != "divinemc" ]]; then continue; fi
+    if [[ "$p" == "rct" && "$b" != divinemc* ]]; then continue; fi
     MATRIX+=("$b:$p")
   done
 done
@@ -122,6 +122,7 @@ run_botswarm() {
   wait_for_bots "$out" "$BOTSWARM_BOTS" "$BOT_JOIN_TIMEOUT" || { stop_bots; return 1; }
   send_cmd "bench mark join_end"
 
+  protect_bots
   spread_bots_on_grid "$BOTSWARM_BOTS" "$BOTSWARM_GRID_SPACING" "$SUMMON_FROM_Y"
   sleep 15
 
@@ -139,8 +140,13 @@ run_botswarm() {
   return 0
 }
 
-run_rctclusters() {
-  local build="$1" profile="$2" out="$3" dir
+protect_bots() {
+  send_cmd "effect give @a minecraft:resistance infinite 4 true"
+  send_cmd "effect give @a minecraft:saturation infinite 0 true"
+}
+
+run_rct() {
+  local build="$1" profile="$2" out="$3" random_tick_speed="$4" extra="$5" dir
   dir="$(server_dir "$build" "$profile")"
   rm -rf "$dir/world" "$dir/world_nether" "$dir/world_the_end"
   cp -a "$ROOT/work/worlds/botswarm/world" "$dir/world"
@@ -151,7 +157,7 @@ run_rctclusters() {
   send_cmd "gamerule spawn_mobs false"
   send_cmd "gamerule advance_weather false"
   send_cmd "gamerule fall_damage false"
-  send_cmd "gamerule random_tick_speed 3"
+  send_cmd "gamerule random_tick_speed $random_tick_speed"
   send_cmd "time set midnight"
   send_cmd "weather clear"
   sleep 10
@@ -161,11 +167,15 @@ run_rctclusters() {
   wait_for_bots "$out" "$RCT_BOTS" "$BOT_JOIN_TIMEOUT" || { stop_bots; return 1; }
   send_cmd "bench mark join_end"
 
+  protect_bots
   spread_bots_in_clusters "$RCT_BOTS" "$RCT_CLUSTERS" "$RCT_SEPARATION" "$SUMMON_FROM_Y"
   sleep 20
 
   send_cmd "bench mark spawn_start"
   while read -r cmd; do send_cmd "$cmd"; done < "$ROOT/work/scenarios/rct-summons.txt"
+  if [[ -n "$extra" ]]; then
+    while read -r cmd; do send_cmd "$cmd"; done < "$extra"
+  fi
   send_cmd "bench mark spawn_end"
 
   echo "     warmup ${RCT_WARMUP_SECONDS}s"
@@ -180,6 +190,14 @@ run_rctclusters() {
   sleep 3
   stop_bots
   return 0
+}
+
+run_rctclusters() {
+  run_rct "$1" "$2" "$3" 3 ""
+}
+
+run_rctblocks() {
+  run_rct "$1" "$2" "$3" "$RCTBLOCKS_RANDOM_TICK_SPEED" "$ROOT/work/scenarios/rct-redstone.txt"
 }
 
 total=$(( RUNS * ${#MATRIX[@]} ))
@@ -198,6 +216,7 @@ for (( run = 1; run <= RUNS; run++ )); do
       continue
     fi
     rm -rf "$out"; mkdir -p "$out"
+    rm -rf "$(server_dir "$build" "$profile")/tracking"
 
     echo "[$((++done_count))/$total] $build/$profile run$run  ($(date +%H:%M:%S))"
     ok=0
@@ -206,6 +225,7 @@ for (( run = 1; run <= RUNS; run++ )); do
 
     dir="$(server_dir "$build" "$profile")"
     cp "$dir/console.log" "$out/" 2>/dev/null || true
+    [[ -d "$dir/tracking" ]] && cp -a "$dir/tracking" "$out/"
     mkdir -p "$out/configs"
     ( cd "$dir" && tar cf - --exclude='./plugins' $(find . -maxdepth 2 \( -name '*.yml' -o -name '*.properties' \) -not -path './plugins/*') 2>/dev/null ) | tar xf - -C "$out/configs" 2>/dev/null || true
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import re
 import statistics
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -112,6 +114,56 @@ def collect_chunkgen(cell_dir):
         runs.append(entry)
     return runs
 
+DEATH = re.compile(r"\[(\d\d:\d\d:\d\d) INFO\]: Bench\d{4} (was|died|fell|drowned|blew|burned|went|hit|walked|tried|froze|starved|suffocated|experienced|discovered|withered|didn't)\b")
+STAMP = re.compile(r"^\[(\d\d):(\d\d):(\d\d)\]$")
+REGION = re.compile(r"^Region with (\d+) chunks and (\d+) entities")
+PLAYER = re.compile(r"^- \S+ avg region tick time:")
+
+def day_seconds(hms):
+    h, m, s = (int(x) for x in hms.split(":"))
+    return h * 3600 + m * 60 + s
+
+def local_window(e0, e1):
+    lo = day_seconds(time.strftime("%H:%M:%S", time.localtime(e0 / 1000)))
+    hi = day_seconds(time.strftime("%H:%M:%S", time.localtime(e1 / 1000)))
+    if hi >= lo:
+        return lambda t: lo <= t <= hi
+    return lambda t: t >= lo or t <= hi
+
+def bot_deaths(run_dir, inside):
+    console = run_dir / "console.log"
+    if not console.exists():
+        return None
+    return sum(1 for line in console.read_text(encoding="utf-8", errors="replace").splitlines()
+               if (m := DEATH.search(line)) and inside(day_seconds(m.group(1))))
+
+def region_stats(run_dir, inside):
+    logs = sorted((run_dir / "tracking").glob("*/region-tick-*.log"))
+    if not logs:
+        return None
+    snaps, current, keep = [], None, False
+    for log in logs:
+        for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
+            if m := STAMP.match(line):
+                keep = inside(day_seconds(f"{m.group(1)}:{m.group(2)}:{m.group(3)}"))
+                current = [] if keep else None
+                if keep:
+                    snaps.append(current)
+            elif current is not None and (m := REGION.match(line)):
+                current.append([int(m.group(1)), int(m.group(2)), 0])
+            elif current is not None and current and PLAYER.match(line):
+                current[-1][2] += 1
+    snaps = [s for s in snaps if s]
+    if not snaps:
+        return None
+    return {
+        "snapshots": len(snaps),
+        "regions": statistics.median(len(s) for s in snaps),
+        "largest_chunk_share": round(statistics.median(max(r[0] for r in s) / sum(r[0] for r in s) for s in snaps), 2),
+        "largest_entity_share": round(statistics.median(max(r[1] for r in s) / max(1, sum(r[1] for r in s)) for s in snaps), 2),
+        "most_players_in_region": max(max(r[2] for r in s) for s in snaps),
+    }
+
 def collect_mspt(cell_dir):
     runs = []
     for run_dir in sorted(cell_dir.glob("run*")):
@@ -123,6 +175,13 @@ def collect_mspt(cell_dir):
         (t0, e0), (t1, e1) = m["measure_start"], m["measure_end"]
         entry = {"run": run_dir.name, "mspt": mspt_stats(run_dir, t0, t1)}
         entry.update(cpu_between(run_dir, e0, e1) or {})
+        inside = local_window(e0, e1)
+        deaths = bot_deaths(run_dir, inside)
+        if deaths is not None:
+            entry["bot_deaths"] = deaths
+        regions = region_stats(run_dir, inside)
+        if regions:
+            entry["regions"] = regions
         bots = cpu_between(run_dir, e0, e1, "bots-sysmon.csv")
         if bots:
             entry["bot_cpu_seconds"] = bots["cpu_seconds"]
@@ -132,7 +191,7 @@ def collect_mspt(cell_dir):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("scenario", choices=["chunkgen", "botswarm", "rctclusters"])
+    ap.add_argument("scenario", choices=["chunkgen", "botswarm", "rctclusters", "rctblocks"])
     args = ap.parse_args()
 
     raw = ROOT / "work" / "raw" / args.scenario
@@ -153,6 +212,10 @@ def main():
         cell["mspt_p99"] = summarise([r["mspt"]["p99"] for r in runs if r["mspt"]], 3)
         cell["peak_rss_mb"] = summarise([r["peak_rss_mb"] for r in runs if "peak_rss_mb" in r], 0)
         cell["bot_cpu_pct"] = summarise([r["bot_cpu_pct"] for r in runs if "bot_cpu_pct" in r], 0)
+        if any("bot_deaths" in r for r in runs):
+            cell["bot_deaths"] = summarise([r["bot_deaths"] for r in runs if "bot_deaths" in r], 0)
+        if any("regions" in r for r in runs):
+            cell["regions"] = summarise([r["regions"]["regions"] for r in runs if "regions" in r], 1)
         cells[cell_dir.name] = cell
 
     baseline = cells.get("paper__stock")
@@ -177,12 +240,14 @@ def main():
                   f"{(cpu['median'] if cpu else 0):>8}  {(cps['median'] if cps else 0):>7}  "
                   f"{str(c.get('vs_paper_pct', '')) + '%':>9}")
     else:
-        print(f"\n{'cell':<{width}}  {'p50 ms':>8}  {'p99 ms':>8}  {'srv cpu%':>9}  {'bot cpu%':>9}  {'vs paper':>9}")
+        print(f"\n{'cell':<{width}}  {'p50 ms':>8}  {'p99 ms':>8}  {'srv cpu%':>9}  {'bot cpu%':>9}  {'deaths':>7}  {'regions':>8}  {'vs paper':>9}")
         for name, c in sorted(cells.items(), key=lambda kv: kv[1]["mspt_p50"]["median"] if kv[1].get("mspt_p50") else 1e9):
             bot = c.get("bot_cpu_pct")
             print(f"{name:<{width}}  {c['mspt_p50']['median']:>8}  {c['mspt_p99']['median']:>8}  "
                   f"{statistics.fmean([r['mean_proc_cpu_pct'] for r in c['runs'] if 'mean_proc_cpu_pct' in r] or [0]):>9.0f}  "
                   f"{(bot['median'] if bot else 0):>9.0f}  "
+                  f"{(c['bot_deaths']['median'] if c.get('bot_deaths') else '-'):>7}  "
+                  f"{(c['regions']['median'] if c.get('regions') else '-'):>8}  "
                   f"{str(c.get('vs_paper_pct', '')) + '%':>9}")
 
 if __name__ == "__main__":

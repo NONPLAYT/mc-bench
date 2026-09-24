@@ -85,9 +85,15 @@ setting no longer exists in some fork.
 | `chunkgen` | Chunky pregenerates radius 2048, fresh world each run | wall time, chunks/s, CPU-seconds |
 | `botswarm` | 150 SoulFire bots wandering a grid, plus 1500 mobs | MSPT p50/p99, server + bot CPU |
 | `rctclusters` | 64 bots and 4000 mobs in 8 clusters 768 blocks apart | MSPT p50/p99, CPU; scales with `RCT_THREADS` |
+| `rctblocks` | `rctclusters` plus 256 observer-clock sticky pistons per cluster and `random_tick_speed` 30 | same, under heavy block updates |
 
-`rctclusters` targets regionised chunk ticking, which only DivineMC has. Clusters
-must stay far apart or they merge into one region and the feature does nothing.
+`rctclusters` and `rctblocks` target regionised chunk ticking, which only DivineMC
+has. Clusters must stay far apart or they merge into one region and the feature
+does nothing. Bots get Resistance V and Saturation after joining, so none of them
+die and respawn at world spawn, which would merge the clusters. The aggregator
+reports bot deaths inside the measurement window and, from DivineMC's
+`tracking/<world>/region-tick-*.log` (copied into each run directory), the median
+number of regions; check both before trusting an RCT result.
 
 ## Profiles
 
