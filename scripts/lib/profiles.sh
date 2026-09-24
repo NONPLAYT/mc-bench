@@ -141,24 +141,24 @@ apply_profile() {
     stock) : ;;
     parity)
       case "$build" in
-        divinemc) apply_parity_divinemc "$dir" ;;
+        divinemc*) apply_parity_divinemc "$dir" ;;
         leaf)     apply_parity_leaf "$dir" ;;
       esac
       ;;
     rct)
       case "$build" in
-        divinemc) apply_rct_divinemc "$dir" ;;
+        divinemc*) apply_rct_divinemc "$dir" ;;
       esac
       ;;
     dfconly)
       case "$build" in
-        divinemc) apply_dfconly_divinemc "$dir" ;;
+        divinemc*) apply_dfconly_divinemc "$dir" ;;
         leaf)     apply_dfconly_leaf "$dir" ;;
       esac
       ;;
     max)
       case "$build" in
-        divinemc) apply_max_divinemc "$dir" ;;
+        divinemc*) apply_max_divinemc "$dir" ;;
         leaf)     apply_max_leaf "$dir" ;;
       esac
       ;;
