@@ -1,4 +1,5 @@
 work/
+logs/
 results/*.json
 jars/*.jar
 /bench.local.conf
