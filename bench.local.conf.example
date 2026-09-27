@@ -1,8 +1,8 @@
 # Sourced last by bench.conf, so these win over its defaults. Note the flip side:
 # a value pinned here also beats a command-line prefix, so comment a line out
-# before sweeping that parameter (RCT_THREADS=12 scripts/run.sh rctclusters).
+# before sweeping that parameter, or write it as RCT_THREADS is written below.
 BOTSWARM_BOTS=150
 CHUNK_WORKER_THREADS=12
 CHUNK_IO_THREADS=4
 BOT_HEAP=12288M
-RCT_THREADS=8
+RCT_THREADS=${RCT_THREADS:-8}

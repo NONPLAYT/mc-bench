@@ -78,6 +78,15 @@ scripts/report.py results/<host>/<date>   # -> markdown tables + one CSV per sce
 `--verify` applies every config profile without running anything, and fails if a
 setting no longer exists in some fork.
 
+`scripts/session.sh <host-tag>` runs the whole published set in one go (setup,
+chunkgen, botswarm with `rct`, the rctclusters sweep at 4/8/12 threads, rctblocks)
+and writes `results/<host-tag>/<date>/` with the report. Paper and Purpur do not
+read `RCT_THREADS`, so they run once at 8 threads and serve as the baseline of
+every sweep point. On a multi-CCD chip it appends the `scripts/cpu-layout.sh`
+pinning to `bench.local.conf` unless `SERVER_CPUS` is already set; chunkgen has
+no bots to keep apart from and runs unpinned on the whole chip. Rerun the same
+command after a crash to resume.
+
 ## Scenarios
 
 | Scenario | What it loads | Measures |
