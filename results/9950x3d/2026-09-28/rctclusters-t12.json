@@ -1,0 +1,428 @@
+{
+  "scenario": "rctclusters",
+  "cells": {
+    "divinemc__rct": {
+      "build": "divinemc",
+      "profile": "rct",
+      "runs": [
+        {
+          "run": "run1",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 8.796,
+            "p95": 10.646,
+            "p99": 12.367,
+            "max": 23.292,
+            "mean": 8.859
+          },
+          "cpu_seconds": 312.3,
+          "peak_rss_mb": 9513,
+          "mean_proc_cpu_pct": 104.4,
+          "bot_deaths": 0,
+          "regions": {
+            "snapshots": 60,
+            "regions": 8.0,
+            "largest_chunk_share": 0.18,
+            "largest_entity_share": 0.16,
+            "most_players_in_region": 8
+          },
+          "bot_cpu_seconds": 749.7,
+          "bot_cpu_pct": 250.7
+        },
+        {
+          "run": "run2",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 9.451,
+            "p95": 11.629,
+            "p99": 13.78,
+            "max": 26.782,
+            "mean": 9.431
+          },
+          "cpu_seconds": 329.4,
+          "peak_rss_mb": 9378,
+          "mean_proc_cpu_pct": 110.1,
+          "bot_deaths": 0,
+          "regions": {
+            "snapshots": 60,
+            "regions": 8.0,
+            "largest_chunk_share": 0.2,
+            "largest_entity_share": 0.17,
+            "most_players_in_region": 8
+          },
+          "bot_cpu_seconds": 787.7,
+          "bot_cpu_pct": 263.3
+        },
+        {
+          "run": "run3",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 8.952,
+            "p95": 10.772,
+            "p99": 12.371,
+            "max": 22.73,
+            "mean": 8.955
+          },
+          "cpu_seconds": 307.2,
+          "peak_rss_mb": 9365,
+          "mean_proc_cpu_pct": 102.7,
+          "bot_deaths": 0,
+          "regions": {
+            "snapshots": 60,
+            "regions": 8.0,
+            "largest_chunk_share": 0.17,
+            "largest_entity_share": 0.16,
+            "most_players_in_region": 8
+          },
+          "bot_cpu_seconds": 735.3,
+          "bot_cpu_pct": 246.0
+        },
+        {
+          "run": "run4",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 9.323,
+            "p95": 11.613,
+            "p99": 14.218,
+            "max": 25.199,
+            "mean": 9.454
+          },
+          "cpu_seconds": 338.3,
+          "peak_rss_mb": 9337,
+          "mean_proc_cpu_pct": 113.3,
+          "bot_deaths": 0,
+          "regions": {
+            "snapshots": 60,
+            "regions": 8.0,
+            "largest_chunk_share": 0.18,
+            "largest_entity_share": 0.16,
+            "most_players_in_region": 8
+          },
+          "bot_cpu_seconds": 779.0,
+          "bot_cpu_pct": 260.9
+        },
+        {
+          "run": "run5",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 9.615,
+            "p95": 11.699,
+            "p99": 13.749,
+            "max": 23.131,
+            "mean": 9.64
+          },
+          "cpu_seconds": 327.9,
+          "peak_rss_mb": 9366,
+          "mean_proc_cpu_pct": 110.0,
+          "bot_deaths": 0,
+          "regions": {
+            "snapshots": 60,
+            "regions": 8.0,
+            "largest_chunk_share": 0.18,
+            "largest_entity_share": 0.16,
+            "most_players_in_region": 8
+          },
+          "bot_cpu_seconds": 708.2,
+          "bot_cpu_pct": 237.6
+        }
+      ],
+      "mspt_p50": {
+        "median": 9.323,
+        "min": 8.796,
+        "max": 9.615,
+        "n": 5,
+        "spread_pct": 8.8
+      },
+      "mspt_p99": {
+        "median": 13.749,
+        "min": 12.367,
+        "max": 14.218,
+        "n": 5,
+        "spread_pct": 13.5
+      },
+      "peak_rss_mb": {
+        "median": 9366,
+        "min": 9337,
+        "max": 9513,
+        "n": 5,
+        "spread_pct": 1.9
+      },
+      "bot_cpu_pct": {
+        "median": 251.0,
+        "min": 238.0,
+        "max": 263.0,
+        "n": 5,
+        "spread_pct": 10.3
+      },
+      "bot_deaths": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 5,
+        "spread_pct": null
+      },
+      "regions": {
+        "median": 8.0,
+        "min": 8.0,
+        "max": 8.0,
+        "n": 5,
+        "spread_pct": 0.0
+      },
+      "vs_paper_pct": 57.0
+    },
+    "paper__stock": {
+      "build": "paper",
+      "profile": "stock",
+      "runs": [
+        {
+          "run": "run1",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 21.657,
+            "p95": 28.074,
+            "p99": 32.427,
+            "max": 44.379,
+            "mean": 21.593
+          },
+          "cpu_seconds": 270.8,
+          "peak_rss_mb": 9246,
+          "mean_proc_cpu_pct": 90.5,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 877.8,
+          "bot_cpu_pct": 293.4
+        },
+        {
+          "run": "run2",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 20.587,
+            "p95": 26.167,
+            "p99": 29.609,
+            "max": 39.983,
+            "mean": 20.333
+          },
+          "cpu_seconds": 259.0,
+          "peak_rss_mb": 9276,
+          "mean_proc_cpu_pct": 86.6,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 799.5,
+          "bot_cpu_pct": 267.3
+        },
+        {
+          "run": "run3",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 22.448,
+            "p95": 27.844,
+            "p99": 30.961,
+            "max": 45.095,
+            "mean": 22.509
+          },
+          "cpu_seconds": 272.3,
+          "peak_rss_mb": 9274,
+          "mean_proc_cpu_pct": 91.0,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 766.2,
+          "bot_cpu_pct": 256.5
+        },
+        {
+          "run": "run4",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 20.439,
+            "p95": 25.514,
+            "p99": 29.988,
+            "max": 37.911,
+            "mean": 20.495
+          },
+          "cpu_seconds": 270.2,
+          "peak_rss_mb": 9252,
+          "mean_proc_cpu_pct": 90.6,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 796.0,
+          "bot_cpu_pct": 266.9
+        },
+        {
+          "run": "run5",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 21.866,
+            "p95": 26.504,
+            "p99": 29.293,
+            "max": 36.048,
+            "mean": 21.266
+          },
+          "cpu_seconds": 268.0,
+          "peak_rss_mb": 9265,
+          "mean_proc_cpu_pct": 89.6,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 791.5,
+          "bot_cpu_pct": 264.7
+        }
+      ],
+      "mspt_p50": {
+        "median": 21.657,
+        "min": 20.439,
+        "max": 22.448,
+        "n": 5,
+        "spread_pct": 9.3
+      },
+      "mspt_p99": {
+        "median": 29.988,
+        "min": 29.293,
+        "max": 32.427,
+        "n": 5,
+        "spread_pct": 10.5
+      },
+      "peak_rss_mb": {
+        "median": 9265,
+        "min": 9246,
+        "max": 9276,
+        "n": 5,
+        "spread_pct": 0.3
+      },
+      "bot_cpu_pct": {
+        "median": 267.0,
+        "min": 256.0,
+        "max": 293.0,
+        "n": 5,
+        "spread_pct": 13.8
+      },
+      "bot_deaths": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 5,
+        "spread_pct": null
+      },
+      "vs_paper_pct": 0.0
+    },
+    "purpur__stock": {
+      "build": "purpur",
+      "profile": "stock",
+      "runs": [
+        {
+          "run": "run1",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 23.349,
+            "p95": 29.456,
+            "p99": 32.722,
+            "max": 39.723,
+            "mean": 22.94
+          },
+          "cpu_seconds": 279.6,
+          "peak_rss_mb": 9264,
+          "mean_proc_cpu_pct": 93.5,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 851.2,
+          "bot_cpu_pct": 285.0
+        },
+        {
+          "run": "run2",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 22.479,
+            "p95": 30.248,
+            "p99": 33.82,
+            "max": 40.39,
+            "mean": 22.592
+          },
+          "cpu_seconds": 283.2,
+          "peak_rss_mb": 9287,
+          "mean_proc_cpu_pct": 95.0,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 779.0,
+          "bot_cpu_pct": 261.4
+        },
+        {
+          "run": "run3",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 21.182,
+            "p95": 26.975,
+            "p99": 32.173,
+            "max": 59.765,
+            "mean": 21.426
+          },
+          "cpu_seconds": 288.1,
+          "peak_rss_mb": 9309,
+          "mean_proc_cpu_pct": 96.3,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 758.7,
+          "bot_cpu_pct": 253.9
+        },
+        {
+          "run": "run4",
+          "mspt": {
+            "ticks": 6001,
+            "p50": 21.87,
+            "p95": 29.103,
+            "p99": 34.13,
+            "max": 53.73,
+            "mean": 21.692
+          },
+          "cpu_seconds": 280.1,
+          "peak_rss_mb": 9258,
+          "mean_proc_cpu_pct": 93.6,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 830.9,
+          "bot_cpu_pct": 277.9
+        },
+        {
+          "run": "run5",
+          "mspt": {
+            "ticks": 6002,
+            "p50": 20.961,
+            "p95": 27.736,
+            "p99": 32.019,
+            "max": 49.273,
+            "mean": 21.365
+          },
+          "cpu_seconds": 283.5,
+          "peak_rss_mb": 9405,
+          "mean_proc_cpu_pct": 94.7,
+          "bot_deaths": 0,
+          "bot_cpu_seconds": 804.0,
+          "bot_cpu_pct": 268.8
+        }
+      ],
+      "mspt_p50": {
+        "median": 21.87,
+        "min": 20.961,
+        "max": 23.349,
+        "n": 5,
+        "spread_pct": 10.9
+      },
+      "mspt_p99": {
+        "median": 32.722,
+        "min": 32.019,
+        "max": 34.13,
+        "n": 5,
+        "spread_pct": 6.5
+      },
+      "peak_rss_mb": {
+        "median": 9287,
+        "min": 9258,
+        "max": 9405,
+        "n": 5,
+        "spread_pct": 1.6
+      },
+      "bot_cpu_pct": {
+        "median": 269.0,
+        "min": 254.0,
+        "max": 285.0,
+        "n": 5,
+        "spread_pct": 11.6
+      },
+      "bot_deaths": {
+        "median": 0,
+        "min": 0,
+        "max": 0,
+        "n": 5,
+        "spread_pct": null
+      },
+      "vs_paper_pct": -1.0
+    }
+  }
+}

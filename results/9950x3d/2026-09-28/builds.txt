@@ -1,0 +1,4 @@
+paper 129 b1d8f6bfa1b6101fa8e947b53041cb3bdf5540e7b83b6547ca19ba7edefeb083 https://fill-data.papermc.io/v1/objects/b1d8f6bfa1b6101fa8e947b53041cb3bdf5540e7b83b6547ca19ba7edefeb083/paper-26.2-129.jar
+purpur 2633 41f7c0535c1cec47ede48d25c8d9bd7f053d4dc44f87293e5a007314dbcfc32c https://api.purpurmc.org/v2/purpur/26.2/2633/download
+leaf 123 aa84a1816829721f3c48e918e3a06236470570e4ba575bd4191fb2ca6d461c07 https://api.leafmc.one/v2/projects/leaf/versions/26.2/builds/123/downloads/leaf-26.2-123.jar
+divinemc 15 caafe7097f7d2c5adf594839dd2965e3b7f7c970a5e5781f81fc1bb575fbe6e8 https://files.bxteam.org/divinemc/versions/26.2/15/divinemc-26.2-15.jar

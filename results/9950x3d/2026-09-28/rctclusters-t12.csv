@@ -1,0 +1,4 @@
+cell,label,bot_cpu_pct,cores_used,cpu_ms_per_tick,cpu_vs_paper_pct,load_headroom_x,max,p50,p50_spread,p99,p99_headroom_pct,p99_spread,peak_rss_mb,runs,speedup,srv_cpu_pct,srv_cpu_seconds,tick_headroom_pct,vs_paper_p50_pct,vs_paper_p99_pct
+divinemc__rct,divinemc rct,251.0,1.081,54.6409,21.3546,5.3631,23.292,9.323,8.8,13.749,72.502,13.5,9366,5,2.323,108.1,327.9,81.354,56.9516,54.1517
+paper__stock,paper stock,267.0,0.8966,45.0183,0.0,2.3087,39.983,21.657,9.3,29.988,40.024,10.5,9265,5,1.0,89.66,270.2,56.686,0.0,0.0
+purpur__stock,purpur stock,269.0,0.9462,47.1921,4.8113,2.2862,49.273,21.87,10.9,32.722,34.556,6.5,9287,5,0.9903,94.62,283.2,56.26,-0.9835,-9.117
