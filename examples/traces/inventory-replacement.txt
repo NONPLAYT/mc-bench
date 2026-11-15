@@ -1,0 +1,51 @@
+@0
+# 1: data merge into an empty chest above a sleeping hopper
+setblock 2 101 2 minecraft:chest
+setblock 2 100 2 minecraft:hopper[facing=down]
+setblock 2 99 2 minecraft:chest
+# 2: snapshot update on a chest above a sleeping hopper
+setblock 6 101 2 minecraft:chest
+setblock 6 100 2 minecraft:hopper[facing=down]
+setblock 6 99 2 minecraft:chest
+# 3: setblock with NBT over the same block type
+setblock 10 101 2 minecraft:chest
+setblock 10 100 2 minecraft:hopper[facing=down]
+setblock 10 99 2 minecraft:chest
+# 4: data merge into the sleeping hopper itself
+setblock 14 100 2 minecraft:hopper[facing=down]
+setblock 14 99 2 minecraft:chest
+# 5: single chest becomes a double chest, items in the new half
+setblock 18 101 2 minecraft:chest[facing=north,type=single]
+setblock 18 100 2 minecraft:hopper[facing=down]
+setblock 18 99 2 minecraft:chest
+# 6: chest boat arrives above a sleeping hopper
+setblock 24 100 2 minecraft:hopper[facing=down]
+setblock 24 99 2 minecraft:chest
+# 7: clone a filled chest over the empty one
+setblock 30 101 2 minecraft:chest
+setblock 30 100 2 minecraft:hopper[facing=down]
+setblock 30 99 2 minecraft:chest
+setblock 30 101 10 minecraft:chest{Items:[{Slot:4b,id:"minecraft:brick",count:11}]}
+# 8: full destination gets emptied by a plugin, hopper holding items must resume
+setblock 36 100 2 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:egg",count:16},{Slot:1b,id:"minecraft:egg",count:16}]}
+setblock 36 99 2 minecraft:hopper[facing=down,enabled=false]{Items:[{Slot:0b,id:"minecraft:egg",count:16},{Slot:1b,id:"minecraft:egg",count:16},{Slot:2b,id:"minecraft:egg",count:16},{Slot:3b,id:"minecraft:egg",count:16},{Slot:4b,id:"minecraft:egg",count:16}]}
+setblock 37 99 2 minecraft:redstone_block
+# 9: shulker box above a sleeping hopper gets an item
+setblock 40 101 2 minecraft:shulker_box
+setblock 40 100 2 minecraft:hopper[facing=down]
+setblock 40 99 2 minecraft:chest
+@200
+data merge block 2 101 2 {Items:[{Slot:7b,id:"minecraft:stone",count:9}]}
+api snapshot 6 101 2
+setblock 10 101 2 minecraft:chest{Items:[{Slot:1b,id:"minecraft:dirt",count:8}]}
+data merge block 14 100 2 {Items:[{Slot:2b,id:"minecraft:sand",count:7}]}
+setblock 19 101 2 minecraft:chest[facing=north,type=left]{Items:[{Slot:0b,id:"minecraft:clay",count:6}]}
+setblock 18 101 2 minecraft:chest[facing=north,type=right]
+summon minecraft:oak_chest_boat 24.5 101.2 2.5 {Items:[{Slot:0b,id:"minecraft:paper",count:5}]}
+clone 30 101 10 30 101 10 30 101 2
+api take 36 99 2
+item replace block 40 101 2 container.0 with minecraft:feather 4
+api nophys 44 99 2
+@1
+# 10: chest placed without physics under a sleeping hopper that holds items
+setblock 44 100 2 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:flint",count:6}]}

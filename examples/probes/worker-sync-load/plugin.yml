@@ -1,0 +1,9 @@
+name: SyncLoadProbe
+version: 1.0.0
+main: probe.SyncLoadProbe
+api-version: '1.21'
+load: POSTWORLD
+commands:
+  slp:
+    description: sync load probe
+    usage: /slp <rate N|stats|reset>

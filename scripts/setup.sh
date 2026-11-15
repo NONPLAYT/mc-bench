@@ -45,18 +45,5 @@ echo
 echo "builds under test (publish this):"
 cat "$MANIFEST"
 
-if [[ ! -f "$ROOT/jars/SoulFireCLI.jar" ]]; then
-  echo
-  echo "missing jars/SoulFireCLI.jar - download it from"
-  echo "  https://github.com/soulfiremc-com/SoulFire/releases/latest"
-  echo "and save it as jars/SoulFireCLI.jar (the desktop app cannot be scripted)"
-  exit 1
-fi
-
-if [[ ! -d "$ROOT/work/apibuild/libraries" ]]; then
-  mkdir -p "$ROOT/work/apibuild"
-  ( cd "$ROOT/work/apibuild" && java -Dpaperclip.patchonly=true -jar "$ROOT/jars/paper.jar" )
-fi
-
-"$ROOT/scripts/build-agent.sh"
+# the agent is compiled per server in provision_server, against that server's own classes
 "$ROOT/scripts/prime.sh"

@@ -1,0 +1,23 @@
+@0
+# equipment: mobs in armour over hoppers, equipment replaced, chunk unloaded and reloaded, mobs killed, drops collected
+fill 30 98 20 33 98 23 minecraft:barrel
+fill 30 99 20 33 99 23 minecraft:hopper[facing=down]
+fill 29 100 19 34 103 24 minecraft:glass outline
+fill 30 100 20 33 103 23 minecraft:air
+summon minecraft:zombie 30.5 100 20.5 {NoAI:1b,PersistenceRequired:1b,equipment:{head:{id:"minecraft:diamond_helmet"},mainhand:{id:"minecraft:iron_sword",count:1}},drop_chances:{head:2.0f,mainhand:2.0f}}
+summon minecraft:zombie 32.5 100 22.5 {NoAI:1b,PersistenceRequired:1b,equipment:{feet:{id:"minecraft:iron_boots"},mainhand:{id:"minecraft:cobblestone",count:20}},drop_chances:{feet:2.0f,mainhand:2.0f}}
+summon minecraft:skeleton 31.5 100 21.5 {NoAI:1b,PersistenceRequired:1b,equipment:{head:{id:"minecraft:leather_helmet"},mainhand:{id:"minecraft:bow"}},drop_chances:{head:2.0f,mainhand:2.0f}}
+summon minecraft:armor_stand 33.5 100 20.5 {equipment:{head:{id:"minecraft:iron_helmet"},mainhand:{id:"minecraft:torch",count:3}}}
+@100
+item replace entity @e[type=zombie] armor.head with minecraft:golden_helmet
+item replace entity @e[type=zombie] weapon.mainhand with minecraft:cobblestone 5
+@150
+forceload remove 0 0 47 31
+@350
+forceload add 0 0 47 31
+@400
+item replace entity @e[type=skeleton] weapon.mainhand with minecraft:stone_sword
+@420
+kill @e[type=zombie]
+kill @e[type=skeleton]
+kill @e[type=armor_stand]

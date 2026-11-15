@@ -12,7 +12,6 @@ mkdir -p "$STATE"
 [[ -f "$STATE/date" ]] || date +%F > "$STATE/date"
 OUT="$ROOT/results/$HOST_TAG/$(cat "$STATE/date")"
 
-[[ -f "$ROOT/jars/SoulFireCLI.jar" ]] || { echo "missing jars/SoulFireCLI.jar" >&2; exit 1; }
 [[ -f "$ROOT/bench.local.conf" ]] || { echo "missing bench.local.conf" >&2; exit 1; }
 if [[ "$(RCT_THREADS=3 bash -c "source '$ROOT/bench.conf'; echo \$RCT_THREADS")" != 3 ]]; then
   echo "bench.local.conf pins RCT_THREADS; write it as RCT_THREADS=\${RCT_THREADS:-8} so the sweep can override it" >&2
@@ -25,13 +24,12 @@ if [[ -z "$(bash -c "source '$ROOT/bench.conf'; echo \${SERVER_CPUS:-}")" ]]; th
     command -v taskset >/dev/null || { echo "taskset is missing (util-linux)" >&2; exit 1; }
     {
       echo
-      echo "# Server on the cache-heavy CCD, bots on the other one (scripts/cpu-layout.sh)."
+      echo "# Server on the cache-heavy CCD (scripts/cpu-layout.sh)."
       echo "# UNPINNED_SERVER=1 gives the server the whole chip, session.sh sets it for chunkgen."
       grep -oE 'SERVER_CPUS=[0-9,-]+' <<< "$layout" | sed 's/^/[[ -n "${UNPINNED_SERVER:-}" ]] || /'
-      grep -oE 'BOT_CPUS=[0-9,-]+' <<< "$layout"
     } >> "$ROOT/bench.local.conf"
   else
-    echo "warning: single L3 domain, the server and the bots are not pinned" >&2
+    echo "single L3 domain, the server is not pinned"
   fi
 fi
 if grep -qv performance /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor 2>/dev/null; then
@@ -51,8 +49,8 @@ if [[ ! -f "$STATE/setup.done" ]]; then
   "$ROOT/scripts/make-summons.sh"
   touch "$STATE/setup.done"
 fi
-if [[ ! -d "$ROOT/work/worlds/botswarm/world" ]]; then
-  "$ROOT/scripts/make-botswarm-world.sh"
+if [[ ! -d "$ROOT/work/worlds/players/world" ]]; then
+  "$ROOT/scripts/make-world.sh"
 fi
 
 activate() {
@@ -107,7 +105,7 @@ publish() {
 }
 
 stage chunkgen    main 8
-stage botswarm    main 8  --profiles stock,parity,max,rct
+stage players     main 8  --profiles stock,parity,max,rct
 stage rctclusters t4   4  --builds divinemc
 stage rctclusters t8   8
 stage rctclusters t12  12 --builds divinemc
@@ -115,7 +113,7 @@ stage rctblocks   main 8
 
 mkdir -p "$OUT"
 publish chunkgen    main chunkgen
-publish botswarm    main botswarm
+publish players     main players
 publish rctclusters t4   rctclusters-t4  t8
 publish rctclusters t8   rctclusters-t8
 publish rctclusters t12  rctclusters-t12 t8
@@ -124,6 +122,6 @@ publish rctblocks   main rctblocks
 cp "$ROOT/bench.local.conf" "$ROOT/jars/builds.txt" "$OUT/"
 "$ROOT/scripts/report.py" "$OUT"
 tar czf "$OUT/raw.tar.gz" -C "$ROOT/work" \
-  raw/chunkgen-main raw/botswarm-main raw/rctclusters-t4 raw/rctclusters-t8 raw/rctclusters-t12 raw/rctblocks-main
+  raw/chunkgen-main raw/players-main raw/rctclusters-t4 raw/rctclusters-t8 raw/rctclusters-t12 raw/rctblocks-main
 echo
 echo "session complete: $OUT"

@@ -51,7 +51,6 @@ apply_parity_divinemc() {
 apply_parity_leaf() {
   local dir="$1"
   Y "$dir/config/leaf-global.yml" \
-    "async.async-chunk-send.enabled=false" \
     "async.async-mob-spawning.enabled=false" \
     "async.async-pathfinding.enabled=false" \
     "async.async-playerdata-save.enabled=false" \
@@ -64,22 +63,9 @@ apply_parity_leaf() {
     "performance.use-virtual-thread.folia-async-scheduler=false" \
     "performance.use-virtual-thread.async-chat-executor=false" \
     "performance.use-virtual-thread.download-pool=false" \
-    "misc.lag-compensation.enabled=false" \
     "misc.secure-seed.enabled=false" \
     "misc.region-format.format-name=MCA" \
     "gameplay-mechanisms.allow-tripwire-dupe=false"
-}
-
-apply_dfconly_divinemc() {
-  local dir="$1"
-  Y "$dir/divinemc.yml" \
-    "performance.chunks.experimental.enable-density-function-compiler=true"
-}
-
-apply_dfconly_leaf() {
-  local dir="$1"
-  Y "$dir/config/leaf-global.yml" \
-    "performance.density-function-compiler.enabled=true"
 }
 
 apply_rct_divinemc() {
@@ -102,7 +88,6 @@ apply_max_divinemc() {
     "async.pathfinding.max-threads=2" \
     "async.parallel-entity-tracker.enable=true" \
     "performance.dab.enabled=true" \
-    "performance.chunks.experimental.enable-density-function-compiler=true" \
     "performance.chunks.end-biome-cache-enabled=true" \
     "performance.optimizations.use-compact-bit-storage=true"
 }
@@ -110,14 +95,12 @@ apply_max_divinemc() {
 apply_max_leaf() {
   local dir="$1"
   Y "$dir/config/leaf-global.yml" \
-    "async.async-chunk-send.enabled=true" \
     "async.async-mob-spawning.enabled=true" \
     "async.async-pathfinding.enabled=true" \
     "async.async-entity-tracker.enabled=true" \
     "async.parallel-world-ticking.enabled=true" \
     "async.parallel-world-ticking.threads=4" \
     "performance.dab.enabled=true" \
-    "performance.density-function-compiler.enabled=true" \
     "performance.cache-biome.enabled=true" \
     "performance.cache-biome.mob-spawning=true" \
     "performance.optimize-mob-spawning=true" \
@@ -148,12 +131,6 @@ apply_profile() {
     rct)
       case "$build" in
         divinemc*) apply_rct_divinemc "$dir" ;;
-      esac
-      ;;
-    dfconly)
-      case "$build" in
-        divinemc*) apply_dfconly_divinemc "$dir" ;;
-        leaf)     apply_dfconly_leaf "$dir" ;;
       esac
       ;;
     max)

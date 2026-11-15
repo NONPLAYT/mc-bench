@@ -114,7 +114,6 @@ def collect_chunkgen(cell_dir):
         runs.append(entry)
     return runs
 
-DEATH = re.compile(r"\[(\d\d:\d\d:\d\d) INFO\]: Bench\d{4} (was|died|fell|drowned|blew|burned|went|hit|walked|tried|froze|starved|suffocated|experienced|discovered|withered|didn't)\b")
 STAMP = re.compile(r"^\[(\d\d):(\d\d):(\d\d)\]$")
 REGION = re.compile(r"^Region with (\d+) chunks and (\d+) entities")
 PLAYER = re.compile(r"^- \S+ avg region tick time:")
@@ -129,13 +128,6 @@ def local_window(e0, e1):
     if hi >= lo:
         return lambda t: lo <= t <= hi
     return lambda t: t >= lo or t <= hi
-
-def bot_deaths(run_dir, inside):
-    console = run_dir / "console.log"
-    if not console.exists():
-        return None
-    return sum(1 for line in console.read_text(encoding="utf-8", errors="replace").splitlines()
-               if (m := DEATH.search(line)) and inside(day_seconds(m.group(1))))
 
 def region_stats(run_dir, inside):
     logs = sorted((run_dir / "tracking").glob("*/region-tick-*.log"))
@@ -176,22 +168,15 @@ def collect_mspt(cell_dir):
         entry = {"run": run_dir.name, "mspt": mspt_stats(run_dir, t0, t1)}
         entry.update(cpu_between(run_dir, e0, e1) or {})
         inside = local_window(e0, e1)
-        deaths = bot_deaths(run_dir, inside)
-        if deaths is not None:
-            entry["bot_deaths"] = deaths
         regions = region_stats(run_dir, inside)
         if regions:
             entry["regions"] = regions
-        bots = cpu_between(run_dir, e0, e1, "bots-sysmon.csv")
-        if bots:
-            entry["bot_cpu_seconds"] = bots["cpu_seconds"]
-            entry["bot_cpu_pct"] = bots["mean_proc_cpu_pct"]
         runs.append(entry)
     return runs
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("scenario", choices=["chunkgen", "botswarm", "rctclusters", "rctblocks"])
+    ap.add_argument("scenario", choices=["chunkgen", "players", "rctclusters", "rctblocks"])
     args = ap.parse_args()
 
     raw = ROOT / "work" / "raw" / args.scenario
@@ -211,9 +196,6 @@ def main():
         cell["mspt_p50"] = summarise([r["mspt"]["p50"] for r in runs if r["mspt"]], 3)
         cell["mspt_p99"] = summarise([r["mspt"]["p99"] for r in runs if r["mspt"]], 3)
         cell["peak_rss_mb"] = summarise([r["peak_rss_mb"] for r in runs if "peak_rss_mb" in r], 0)
-        cell["bot_cpu_pct"] = summarise([r["bot_cpu_pct"] for r in runs if "bot_cpu_pct" in r], 0)
-        if any("bot_deaths" in r for r in runs):
-            cell["bot_deaths"] = summarise([r["bot_deaths"] for r in runs if "bot_deaths" in r], 0)
         if any("regions" in r for r in runs):
             cell["regions"] = summarise([r["regions"]["regions"] for r in runs if "regions" in r], 1)
         cells[cell_dir.name] = cell
@@ -240,13 +222,10 @@ def main():
                   f"{(cpu['median'] if cpu else 0):>8}  {(cps['median'] if cps else 0):>7}  "
                   f"{str(c.get('vs_paper_pct', '')) + '%':>9}")
     else:
-        print(f"\n{'cell':<{width}}  {'p50 ms':>8}  {'p99 ms':>8}  {'srv cpu%':>9}  {'bot cpu%':>9}  {'deaths':>7}  {'regions':>8}  {'vs paper':>9}")
+        print(f"\n{'cell':<{width}}  {'p50 ms':>8}  {'p99 ms':>8}  {'srv cpu%':>9}  {'regions':>8}  {'vs paper':>9}")
         for name, c in sorted(cells.items(), key=lambda kv: kv[1]["mspt_p50"]["median"] if kv[1].get("mspt_p50") else 1e9):
-            bot = c.get("bot_cpu_pct")
             print(f"{name:<{width}}  {c['mspt_p50']['median']:>8}  {c['mspt_p99']['median']:>8}  "
                   f"{statistics.fmean([r['mean_proc_cpu_pct'] for r in c['runs'] if 'mean_proc_cpu_pct' in r] or [0]):>9.0f}  "
-                  f"{(bot['median'] if bot else 0):>9.0f}  "
-                  f"{(c['bot_deaths']['median'] if c.get('bot_deaths') else '-'):>7}  "
                   f"{(c['regions']['median'] if c.get('regions') else '-'):>8}  "
                   f"{str(c.get('vs_paper_pct', '')) + '%':>9}")
 

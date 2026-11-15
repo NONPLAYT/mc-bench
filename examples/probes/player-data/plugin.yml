@@ -1,0 +1,7 @@
+name: PdwProbe
+version: 1.0.0
+main: pdw.PdwProbe
+api-version: '1.21'
+commands:
+  pdw:
+    usage: /pdw <dat n|adv|quit>

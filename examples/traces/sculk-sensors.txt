@@ -1,0 +1,28 @@
+@0
+fill 0 99 0 46 99 20 minecraft:stone
+setblock 2 100 10 minecraft:sculk_sensor
+setblock 3 100 10 minecraft:redstone_lamp
+setblock 8 100 10 minecraft:calibrated_sculk_sensor[facing=north]
+setblock 8 100 9 minecraft:redstone_block
+setblock 14 100 10 minecraft:sculk_shrieker
+setblock 14 99 10 minecraft:sculk_sensor
+setblock 42 100 10 minecraft:sculk_catalyst
+summon minecraft:zombie 44.5 100 10.5 {NoAI:1b,PersistenceRequired:1b,Silent:1b}
+@100
+setblock 4 100 12 minecraft:oak_planks
+@140
+setblock 9 100 12 minecraft:oak_planks
+@180
+setblock 15 100 12 minecraft:oak_planks
+@220
+kill @e[type=zombie]
+@300
+setblock 4 100 12 minecraft:air
+data merge block 2 100 10 {last_vibration_frequency:7}
+@400
+forceload remove 0 0 47 31
+@550
+forceload add 0 0 47 31
+@600
+setblock 5 100 8 minecraft:glass
+setblock 9 100 14 minecraft:glass

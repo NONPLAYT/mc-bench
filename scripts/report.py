@@ -47,7 +47,6 @@ def mspt_rows(doc):
             "srv_cpu_pct": statistics.fmean(r["mean_proc_cpu_pct"] for r in runs),
             "srv_cpu_seconds": cpu_s,
             "cpu_ms_per_tick": cpu_s * 1000 / ticks,
-            "bot_cpu_pct": (c.get("bot_cpu_pct") or {}).get("median"),
             "peak_rss_mb": c["peak_rss_mb"]["median"],
             "runs": len(runs),
         }
@@ -108,15 +107,14 @@ def pct(v, signed=False):
 
 def mspt_table(rows):
     out = [
-        "| Build / profile | p50, ms | spread | p99, ms | max, ms | server CPU | cores | bot CPU | RSS, MB | p50 vs Paper | p99 vs Paper | CPU vs Paper | headroom to 50 ms |",
-        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Build / profile | p50, ms | spread | p99, ms | max, ms | server CPU | cores | RSS, MB | p50 vs Paper | p99 vs Paper | CPU vs Paper | headroom to 50 ms |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
-        bot = f"{r['bot_cpu_pct']:.0f}%" if r["bot_cpu_pct"] else "—"
         out.append(
             f"| {r['label']} | {r['p50']:.2f} | {pct(r['p50_spread'])} | {r['p99']:.2f} | {r['max']:.1f} | "
             f"{r['srv_cpu_pct']:.0f}% | {r['cores_used']:.2f} | "
-            f"{bot} | {r['peak_rss_mb']:.0f} | "
+            f"{r['peak_rss_mb']:.0f} | "
             f"{pct(r.get('vs_paper_p50_pct'), True)} | {pct(r.get('vs_paper_p99_pct'), True)} | "
             f"{pct(r.get('cpu_vs_paper_pct'), True)} | {pct(r['tick_headroom_pct'])} (×{r['load_headroom_x']:.1f}) |"
         )

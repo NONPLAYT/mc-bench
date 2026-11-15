@@ -1,0 +1,36 @@
+@0
+# 1: sleeping furnace gets fuel in slot 1 through the plugin API (lithium e8c6b397)
+setblock 2 100 2 minecraft:furnace{Items:[{Slot:0b,id:"minecraft:raw_iron",count:8}]}
+# 2: chest half placed with its type already set, hopper below caches it (lithium 416f68de)
+setblock 8 100 2 minecraft:hopper[facing=down]
+setblock 8 99 2 minecraft:chest
+setblock 8 101 2 minecraft:chest[facing=north,type=left]
+# 3: double chest above a hopper, one half broken and replaced (double inventory invalidation)
+setblock 14 101 2 minecraft:chest[facing=north,type=left]
+setblock 15 101 2 minecraft:chest[facing=north,type=right]{Items:[{Slot:0b,id:"minecraft:cobblestone",count:3}]}
+setblock 14 100 2 minecraft:hopper[facing=down]
+setblock 14 99 2 minecraft:chest
+# 4: hopper under a furnace, comparator reading the furnace (lithium c6f8e3cf)
+setblock 20 101 2 minecraft:furnace{Items:[{Slot:1b,id:"minecraft:coal",count:2}]}
+setblock 20 100 2 minecraft:hopper[facing=down]
+setblock 20 99 2 minecraft:chest
+setblock 21 101 2 minecraft:comparator[facing=west]
+setblock 22 101 2 minecraft:redstone_wire
+# 5: hopper under a brewing stand with a comparator
+setblock 26 101 2 minecraft:brewing_stand{Items:[{Slot:4b,id:"minecraft:blaze_powder",count:2}]}
+setblock 26 100 2 minecraft:hopper[facing=down]
+setblock 26 99 2 minecraft:chest
+setblock 27 101 2 minecraft:comparator[facing=west]
+@100
+api fuel 2 100 2
+setblock 9 101 2 minecraft:chest[facing=north,type=right]{Items:[{Slot:0b,id:"minecraft:clay_ball",count:7}]}
+item replace block 20 101 2 container.2 with minecraft:iron_ingot 5
+@200
+setblock 15 101 2 minecraft:air
+@260
+setblock 15 101 2 minecraft:chest[facing=north,type=right]{Items:[{Slot:0b,id:"minecraft:andesite",count:4}]}
+item replace block 26 101 2 container.0 with minecraft:potion 1
+@400
+setblock 8 101 2 minecraft:air
+@420
+setblock 8 101 2 minecraft:chest[facing=north,type=left]{Items:[{Slot:3b,id:"minecraft:string",count:9}]}

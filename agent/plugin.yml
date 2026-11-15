@@ -1,10 +1,11 @@
-name: BenchAgent
-version: 1.0.0
-main: org.bxteam.bench.BenchAgent
-api-version: 1.13
+name: TestAgent
+version: 1.1.0
+main: org.bxteam.testagent.TestAgent
+api-version: '1.21'
 load: POSTWORLD
-description: Records per-tick durations for the fork benchmark harness
+description: Records tick durations, drives in-process fake players and runs tick scripts for server-core testing
 commands:
-  bench:
-    description: Benchmark agent control
-    usage: /bench <mark <label>|reset|dump>
+  testagent:
+    description: Test agent control
+    aliases: [ta]
+    usage: /ta <fake spawn|fake clear|fake status|mobs|spawns|chunks|script|mark|reset|stats|dump>

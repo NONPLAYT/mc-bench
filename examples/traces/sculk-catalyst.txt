@@ -1,0 +1,30 @@
+@0
+# stone floor so sculk can spread and items land
+fill 0 99 0 40 99 20 minecraft:stone
+setblock 2 100 10 minecraft:sculk_sensor
+setblock 3 100 10 minecraft:redstone_lamp
+setblock 8 100 10 minecraft:calibrated_sculk_sensor[facing=north]
+setblock 8 100 9 minecraft:redstone_block
+setblock 14 100 10 minecraft:sculk_shrieker
+setblock 14 99 10 minecraft:sculk_sensor
+setblock 24 100 10 minecraft:sculk_catalyst
+summon minecraft:zombie 26.5 100 10.5 {NoAI:1b,PersistenceRequired:1b}
+summon minecraft:zombie 22.5 100 12.5 {NoAI:1b,PersistenceRequired:1b}
+@100
+# vibrations: block placed near the sensors, items landing, then a mob death near the catalyst
+setblock 4 100 12 minecraft:oak_planks
+summon minecraft:item 9.5 103 12.5 {Item:{id:"minecraft:stone",count:1}}
+summon minecraft:item 14.5 103 12.5 {Item:{id:"minecraft:dirt",count:1}}
+@160
+kill @e[type=zombie,x=26,y=100,z=10,distance=..1]
+@300
+setblock 4 100 12 minecraft:air
+data merge block 2 100 10 {last_vibration_frequency:7}
+@330
+kill @e[type=zombie]
+@400
+forceload remove 0 0 47 31
+@550
+forceload add 0 0 47 31
+@600
+setblock 5 100 8 minecraft:glass

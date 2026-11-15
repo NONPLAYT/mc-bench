@@ -1,19 +1,22 @@
 # mc-bench
 
-Benchmark harness comparing **Paper**, **Purpur**, **Leaf** and **DivineMC** on Minecraft 26.2.
+Benchmark harness comparing **Paper**, **Purpur**, **Leaf** and **DivineMC** on Minecraft 26.3, and the toolkit
+for testing a server core on a local machine: throwaway servers, in-process fake players, tick-by-tick traces and
+probe plugins.
+
+Load comes from fake players: `ServerPlayer`s that live inside the server on a connection with no client, driven
+by the TestAgent plugin (`agent/`). They load and generate chunks, get tracked, keep natural spawning going, are
+targeted by mobs and have chunk packets built for them, without a bot client eating the CPU and memory the server
+is measured on. What they do not exercise is the network path: packets are dropped before Netty encoding.
 
 ## Setup
 
 Needs JDK 25, Python 3, curl and about 60 GB of disk.
 
 ```sh
-# SoulFire is the only jar not fetched automatically: grab the CLI jar from
-# https://github.com/soulfiremc-com/SoulFire/releases/latest and save it as:
-#   jars/SoulFireCLI.jar          (the desktop app is a GUI and cannot be scripted)
-
-scripts/setup.sh                  # resolves the latest official build of each fork,
-                                  # builds the agent, boots each build once
-scripts/make-botswarm-world.sh    # shared world for the bot scenarios (~10 min)
+scripts/setup.sh                  # resolves the latest official build of each fork, boots each
+                                  # build once (the agent is compiled against every server)
+scripts/make-world.sh             # shared world for the players and rct scenarios (~10 min)
 ```
 
 `setup.sh` writes `jars/builds.txt` with the build number, sha256 and URL of every
@@ -27,21 +30,25 @@ Defaults target a 16-core machine. Host-specific values go in `bench.local.conf`
 Put your tuned numbers there once instead of prefixing every command; publish the
 file with the results, since it says what the host actually ran.
 
-A full `botswarm` run takes about three hours, so it is worth spending five
-minutes first checking the load lands in the 20-35 ms band:
+A full `players` run takes a few hours, so it is worth spending five minutes
+first checking the load lands in the 20-35 ms band:
 
 ```sh
-BOTSWARM_MEASURE_SECONDS=120 scripts/run.sh botswarm --builds divinemc --profiles stock --runs 1
-scripts/aggregate.py botswarm
+PLAYERS_MEASURE_SECONDS=120 scripts/run.sh players --builds divinemc --profiles stock --runs 1
+scripts/aggregate.py players
 ```
 
-| Setting | Meaning | 6 cores | 16 cores |
-|---|---|---|---|
-| `BOTSWARM_BOTS` | main load knob | 60 | 150 |
-| `CHUNK_WORKER_THREADS` / `CHUNK_IO_THREADS` | pinned identically on every build | 6 / 4 | 12 / 6 |
-| `RCT_THREADS` | regionised ticking workers; sweep it | 4 | 4, 8, 12 |
-| `BOT_HEAP` | bot client heap | 6144M | 12288M |
-| `SERVER_CPUS` / `BOT_CPUS` | taskset lists per JVM; see `scripts/cpu-layout.sh` | — | one CCD each |
+| Setting | Meaning |
+|---|---|
+| `PLAYERS_COUNT` | fake players in `players`; the main load knob |
+| `PLAYERS_MOBS` | mobs summoned on the players' grid |
+| `PLAYERS_SPEED` / `PLAYERS_WANDER_RADIUS` | how fast and how far each player wanders around its home |
+| `CHUNK_WORKER_THREADS` / `CHUNK_IO_THREADS` | pinned identically on every build |
+| `RCT_THREADS` | regionised ticking workers; sweep it |
+| `SERVER_CPUS` | taskset list for the server JVM; see `scripts/cpu-layout.sh` |
+
+The fake-player loads have not been calibrated on a 16-core machine yet; start from the defaults and adjust
+`PLAYERS_COUNT` until p50 is in the band.
 
 A value pinned in `bench.local.conf` also beats a command-line prefix, since that
 file is sourced last. Comment the line out before sweeping that parameter.
@@ -49,23 +56,9 @@ file is sourced last. Comment the line out before sweeping that parameter.
 The machine must be otherwise idle, `swapoff -a`, CPU governor `performance`.
 
 On a dual-CCD chip such as the 9950X3D only one CCD carries the extra cache, and
-letting the scheduler move the server between them adds variance. `SERVER_CPUS`
-and `BOT_CPUS` pin each JVM separately; `scripts/cpu-layout.sh` reads the L3
-topology and prints both lines ready to paste into `bench.local.conf`:
-
-```sh
-scripts/cpu-layout.sh
-#   SERVER_CPUS=0-7,16-23      <- cache-heavy CCD
-#   BOT_CPUS=8-15,24-31
-```
-
-Do not put `taskset` in front of `run.sh` instead: affinity is inherited, so that
-pins the server and the bot client to the *same* CCD, which is the opposite of
-what you want.
-
-Better still, run the bots from a second machine and point `BOT_TARGET` at this
-host. Bots cost ~8x the CPU the server does, so sharing one box means measuring
-contention rather than the server.
+letting the scheduler move the server between them adds variance.
+`scripts/cpu-layout.sh` reads the L3 topology and prints a `SERVER_CPUS` line
+for the cache-heavy CCD, ready to paste into `bench.local.conf`.
 
 ## Running
 
@@ -79,12 +72,12 @@ scripts/report.py results/<host>/<date>   # -> markdown tables + one CSV per sce
 setting no longer exists in some fork.
 
 `scripts/session.sh <host-tag>` runs the whole published set in one go (setup,
-chunkgen, botswarm with `rct`, the rctclusters sweep at 4/8/12 threads, rctblocks)
+chunkgen, players with `rct`, the rctclusters sweep at 4/8/12 threads, rctblocks)
 and writes `results/<host-tag>/<date>/` with the report. Paper and Purpur do not
 read `RCT_THREADS`, so they run once at 8 threads and serve as the baseline of
 every sweep point. On a multi-CCD chip it appends the `scripts/cpu-layout.sh`
-pinning to `bench.local.conf` unless `SERVER_CPUS` is already set; chunkgen has
-no bots to keep apart from and runs unpinned on the whole chip. Rerun the same
+pinning to `bench.local.conf` unless `SERVER_CPUS` is already set; chunkgen runs
+unpinned on the whole chip. Rerun the same
 command after a crash to resume.
 
 ## Scenarios
@@ -92,17 +85,16 @@ command after a crash to resume.
 | Scenario | What it loads | Measures |
 |---|---|---|
 | `chunkgen` | Chunky pregenerates radius 2048, fresh world each run | wall time, chunks/s, CPU-seconds |
-| `botswarm` | 150 SoulFire bots wandering a grid, plus 1500 mobs | MSPT p50/p99, server + bot CPU |
-| `rctclusters` | 64 bots and 4000 mobs in 8 clusters 768 blocks apart | MSPT p50/p99, CPU; scales with `RCT_THREADS` |
+| `players` | 60 fake players wandering a 160-block grid, plus 1500 mobs | MSPT p50/p99, server CPU |
+| `rctclusters` | 64 fake players and 4000 mobs in 8 clusters on a circle of radius 768 | MSPT p50/p99, CPU; scales with `RCT_THREADS` |
 | `rctblocks` | `rctclusters` plus 256 observer-clock sticky pistons per cluster and `random_tick_speed` 30 | same, under heavy block updates |
 
 `rctclusters` and `rctblocks` target regionised chunk ticking, which only DivineMC
 has. Clusters must stay far apart or they merge into one region and the feature
-does nothing. Bots get Resistance V and Saturation after joining, so none of them
-die and respawn at world spawn, which would merge the clusters. The aggregator
-reports bot deaths inside the measurement window and, from DivineMC's
+does nothing. Fake players have infinite Resistance V and Saturation, so mobs
+attack them but none of them die. The aggregator reports, from DivineMC's
 `tracking/<world>/region-tick-*.log` (copied into each run directory), the median
-number of regions; check both before trusting an RCT result.
+number of regions; check it before trusting an RCT result.
 
 ## Profiles
 
@@ -111,7 +103,6 @@ number of regions; check both before trusting an RCT result.
 | `stock` | each fork exactly as shipped |
 | `parity` | same game behaviour and threading model everywhere: nothing async, no gameplay changes |
 | `max` | each fork's performance features turned up |
-| `dfconly` | stock plus the density function compiler, to isolate it |
 | `rct` | regionised chunk ticking only, at `RCT_THREADS` |
 
 Leaf ships nearly everything off by default while DivineMC ships several features
@@ -125,25 +116,27 @@ is for.
   temperature: check they match across cells before trusting a result.
 - Always report CPU-seconds next to wall time. A fork that lowers MSPT by using
   more cores has not made the work cheaper.
-- **Bots cost far more CPU than the server** (~8x in our measurements), so on one
-  machine the bot client is the bottleneck, not the server. Mobs are the cheap way
-  to load the server. Set `BOT_TARGET` to run bots from another host.
 - Aim for p50 around 20-35 ms. A saturated server measures how badly it degrades,
-  not how fast it is. **Bots, not mobs, are what load the server** in `botswarm`:
-  cutting mobs 4000 -> 1500 moved p50 only 82 -> 64 ms, while cutting bots 150 -> 60
-  moved it to 21 ms. Tune `BOTSWARM_BOTS` first.
-
-Measured anchor points on a Ryzen 5 5600 (6c/12t), server and bots on the same box:
-
-| Load | p50 | p99 | server CPU | bot CPU |
-|---|---|---|---|---|
-| 150 bots, 1500 mobs | 64 ms | 103 ms | 202% | 447% |
-| 60 bots, 1500 mobs | 21 ms | 30 ms | 113% | 195% |
-| `rctclusters`, 64 bots, 4000 mobs | 12 ms | 20 ms | 121% | 404% |
-
-The shipped default of 150 bots targets a 16-core machine; on 6 cores use 60.
+  not how fast it is. Players, more than mobs, are what load the server: tune
+  `PLAYERS_COUNT` first.
+- Moving players load more chunks when ticks are slow, which slows ticks further,
+  so a small gap between builds amplifies itself. Compare per-chunk work or pin
+  the tick rate when a result looks too large.
+- Results published before November 2026 (`docs/results-9950x3d.md`) used SoulFire
+  bots, not fake players: they are not comparable with new runs.
 - Worldgen is nondeterministic: two runs of the same build differ in ~10% of
   chunks, and Paper does the same. Terrain diffs cannot validate a change.
+
+## Testing a server core
+
+Besides the matrix above, the same pieces work on single throwaway servers for
+checking a change: `scripts/mcs.py` creates and drives a server dir, the agent
+spawns fake players, records ticks and runs tick-by-tick traces, and
+`scripts/mcs.py plugin` builds a probe plugin against the exact server under
+test. [`examples/`](examples/README.md) has the loads, traces and probes written
+while working on DivineMC, as a base for your own tests;
+[`skill/mc-server-testing`](skill/mc-server-testing/SKILL.md) is the command
+reference (also usable as a Claude Code skill: link it into `~/.claude/skills/`).
 
 ## Publishing
 

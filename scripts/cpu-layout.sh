@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Prints the CCD layout and, on a multi-CCD chip, ready-to-paste SERVER_CPUS /
-# BOT_CPUS lines. CCD membership comes from the L3 id (each CCD has its own L3);
-# the cache-heavy CCD is the one with the larger L3, which is where the server
-# belongs. Run this on the machine that will run the benchmark.
+# Prints the CCD layout and, on a multi-CCD chip, a ready-to-paste SERVER_CPUS
+# line. CCD membership comes from the L3 id (each CCD has its own L3); the
+# cache-heavy CCD is the one with the larger L3, which is where the server
+# belongs: letting the scheduler move it between CCDs adds variance. Run this on
+# the machine that will run the benchmark.
 set -euo pipefail
 
 declare -A cpus_of size_of
@@ -41,21 +42,12 @@ done
 
 if (( ${#cpus_of[@]} == 1 )); then
   echo
-  echo "Single L3 domain: nothing to split. Leave SERVER_CPUS / BOT_CPUS empty and"
-  echo "run the bots from a second machine (set BOT_TARGET), or accept that botswarm"
-  echo "measures the bot client's contention as much as the server."
+  echo "Single L3 domain: nothing to pin, leave SERVER_CPUS empty."
   exit 0
 fi
 
-rest=""
-for id in "${!cpus_of[@]}"; do
-  [[ "$id" == "$biggest" ]] || rest+="${cpus_of[$id]}"
-done
-
 echo
-echo "Server on the cache-heavy CCD (L3 #$biggest, ${size_of[$biggest]}), bots on the rest:"
+echo "Server on the cache-heavy CCD (L3 #$biggest, ${size_of[$biggest]}):"
 echo "  SERVER_CPUS=$(tolist "${cpus_of[$biggest]}")"
-echo "  BOT_CPUS=$(tolist "$rest")"
 echo
-echo "Add those two lines to bench.local.conf. Better still, run the bots from a"
-echo "second machine (BOT_TARGET) and give the server the whole chip."
+echo "Add that line to bench.local.conf."

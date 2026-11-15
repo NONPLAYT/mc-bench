@@ -1,0 +1,93 @@
+@0
+setblock 2 101 2 minecraft:chest{Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:dirt",count:64},{Slot:2b,id:"minecraft:iron_ore",count:64},{Slot:5b,id:"minecraft:oak_planks",count:17}]}
+setblock 2 100 2 minecraft:hopper[facing=east]
+fill 3 100 2 12 100 2 minecraft:hopper[facing=east]
+setblock 13 100 2 minecraft:hopper[facing=down]
+setblock 13 99 2 minecraft:chest
+fill 11 98 2 15 98 2 minecraft:stone
+setblock 14 99 2 minecraft:comparator[facing=east]
+setblock 15 99 2 minecraft:redstone_wire
+setblock 12 99 2 minecraft:comparator[facing=east]
+setblock 11 99 2 minecraft:redstone_wire
+fill 0 99 6 1 99 8 minecraft:stone
+setblock 2 100 6 minecraft:furnace
+setblock 2 101 6 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:raw_iron",count:3}]}
+setblock 3 100 6 minecraft:hopper[facing=west]{Items:[{Slot:0b,id:"minecraft:coal",count:2}]}
+setblock 2 99 6 minecraft:hopper[facing=east]
+setblock 3 99 6 minecraft:chest
+setblock 1 100 6 minecraft:comparator[facing=east]
+setblock 0 100 6 minecraft:redstone_wire
+setblock 2 100 8 minecraft:furnace
+setblock 2 101 8 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:raw_iron",count:4}]}
+setblock 3 100 8 minecraft:hopper[facing=west]{Items:[{Slot:0b,id:"minecraft:coal",count:2}]}
+setblock 2 99 8 minecraft:hopper[facing=east]
+setblock 3 99 8 minecraft:chest
+setblock 1 100 8 minecraft:comparator[facing=west]
+setblock 0 100 8 minecraft:redstone_wire
+setblock 6 100 20 minecraft:brewing_stand{Items:[{Slot:0b,id:"minecraft:glass_bottle",count:1}]}
+setblock 6 101 20 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:nether_wart",count:3}]}
+setblock 7 100 20 minecraft:hopper[facing=west]{Items:[{Slot:0b,id:"minecraft:blaze_powder",count:2}]}
+setblock 20 100 2 minecraft:hopper[facing=down]
+setblock 20 99 2 minecraft:barrel
+summon minecraft:item 20.5 101.5 2.5 {Item:{id:"minecraft:gold_ingot",count:16}}
+setblock 24 100 2 minecraft:hopper[facing=down]
+setblock 24 99 2 minecraft:chest
+setblock 24 101 2 minecraft:rail
+summon minecraft:chest_minecart 24.5 101.0625 2.5 {Items:[{Slot:0b,id:"minecraft:cobblestone",count:20}]}
+setblock 28 100 2 minecraft:hopper[facing=down]
+setblock 28 99 2 minecraft:chest
+setblock 28 101 2 minecraft:rail
+summon minecraft:hopper_minecart 28.5 101.0625 2.5 {Items:[{Slot:0b,id:"minecraft:apple",count:12}]}
+summon minecraft:item 28.5 102.5 2.5 {Item:{id:"minecraft:bread",count:8}}
+fill 30 100 12 44 100 12 minecraft:redstone_block
+setblock 37 100 12 minecraft:hopper[facing=down]
+setblock 37 99 12 minecraft:chest
+fill 30 101 12 44 101 12 minecraft:powered_rail
+setblock 37 101 12 minecraft:rail
+setblock 29 101 12 minecraft:stone
+setblock 45 101 12 minecraft:stone
+summon minecraft:chest_minecart 31.5 101.0625 12.5 {Motion:[0.4d,0.0d,0.0d],Items:[{Slot:0b,id:"minecraft:sand",count:64},{Slot:1b,id:"minecraft:sand",count:64}]}
+setblock 40 100 2 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:glass",count:10}]}
+setblock 40 99 2 minecraft:chest
+setblock 41 100 2 minecraft:redstone_block
+setblock 44 100 20 minecraft:hopper[facing=down]
+setblock 44 99 20 minecraft:chest
+setblock 44 101 20 minecraft:composter[level=8]
+setblock 30 99 22 minecraft:chest[type=left,facing=north]
+setblock 31 99 22 minecraft:chest[type=right,facing=north]
+setblock 30 100 22 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:stone",count:64},{Slot:1b,id:"minecraft:dirt",count:64},{Slot:2b,id:"minecraft:sand",count:64}]}
+setblock 24 101 10 minecraft:barrel{Items:[{Slot:3b,id:"minecraft:arrow",count:30}]}
+setblock 24 100 10 minecraft:hopper[facing=down]
+setblock 24 99 10 minecraft:dropper[facing=down]
+@200
+summon minecraft:item 20.5 101.5 2.5 {Item:{id:"minecraft:redstone",count:40}}
+summon minecraft:item 28.5 102.5 2.5 {Item:{id:"minecraft:carrot",count:5}}
+@300
+setblock 41 100 2 minecraft:air
+@400
+api add 2 101 2
+api amount 13 99 2
+api snapshot 20 99 2
+@450
+setblock 41 100 2 minecraft:redstone_block
+@520
+setblock 41 100 2 minecraft:air
+@600
+setblock 13 99 2 minecraft:air
+@700
+setblock 13 99 2 minecraft:chest
+@800
+item replace block 2 101 2 container.20 with minecraft:redstone 30
+api take 3 99 6
+@900
+setblock 7 100 2 minecraft:air
+@950
+setblock 7 100 2 minecraft:hopper[facing=east]
+@1000
+setblock 44 101 20 minecraft:composter[level=8]
+setblock 14 99 2 minecraft:air
+@1050
+setblock 14 99 2 minecraft:comparator[facing=east]
+summon minecraft:chest_minecart 24.5 102.0 2.5 {Items:[{Slot:0b,id:"minecraft:gravel",count:7}]}
+@1100
+kill @e[type=minecraft:chest_minecart,x=24,y=100,z=2,distance=..3]

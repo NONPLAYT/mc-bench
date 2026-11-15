@@ -4,7 +4,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/bench.conf"
 source "$ROOT/scripts/lib/server.sh"
 source "$ROOT/scripts/lib/profiles.sh"
-source "$ROOT/scripts/lib/bots.sh"
 
 SCENARIO="${1:-}"; shift || true
 case "$SCENARIO" in
@@ -26,14 +25,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -n "$SCENARIO" ]] || { echo "usage: run.sh <chunkgen|botswarm|rctclusters|rctblocks> [--runs N] [--profiles a,b] [--builds a,b] [--radius R] [--verify]" >&2; exit 2; }
+[[ -n "$SCENARIO" ]] || { echo "usage: run.sh <chunkgen|players|rctclusters|rctblocks> [--runs N] [--profiles a,b] [--builds a,b] [--radius R] [--verify]" >&2; exit 2; }
 
 MATRIX=()
 for b in "${SELECTED_BUILDS[@]}"; do
   for p in "${PROFILES[@]}"; do
     if [[ "$p" == "max" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
     if [[ "$p" == "parity" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
-    if [[ "$p" == "dfconly" && ( "$b" == "paper" || "$b" == "purpur" ) ]]; then continue; fi
     if [[ "$p" == "rct" && "$b" != divinemc* ]]; then continue; fi
     MATRIX+=("$b:$p")
   done
@@ -86,74 +84,17 @@ run_chunkgen() {
   send_cmd "chunky shape circle"
   send_cmd "chunky radius $RADIUS"
   sleep 2
-  send_cmd "bench mark gen_start"
+  send_cmd "ta mark gen_start"
   send_cmd "chunky start"
 
   wait_for_log "Task finished for" "$CHUNKGEN_TIMEOUT" 0.2 || return 1
-  send_cmd "bench mark gen_end"
+  send_cmd "ta mark gen_end"
   sleep 2
   return 0
 }
 
-run_botswarm() {
-  local build="$1" profile="$2" out="$3" dir
-  dir="$(server_dir "$build" "$profile")"
-  rm -rf "$dir/world" "$dir/world_nether" "$dir/world_the_end"
-  cp -a "$ROOT/work/worlds/botswarm/world" "$dir/world"
-
-  start_server "$dir" "$BOTSWARM_XMX" "$out"
-  wait_for_ready "$out" "$BOOT_TIMEOUT" || return 1
-
-  send_cmd "gamerule spawn_mobs false"
-  send_cmd "gamerule advance_weather false"
-  send_cmd "gamerule fall_damage false"
-  send_cmd "gamerule random_tick_speed 3"
-  send_cmd "time set midnight"
-  send_cmd "weather clear"
-  sleep 10
-
-  send_cmd "bench mark spawn_start"
-  while read -r cmd; do send_cmd "$cmd"; done < "$ROOT/work/scenarios/botswarm-summons.txt"
-  send_cmd "bench mark spawn_end"
-  sleep 20
-
-  send_cmd "bench mark join_start"
-  start_bots "$out" "$BOTSWARM_BOTS"
-  wait_for_bots "$out" "$BOTSWARM_BOTS" "$BOT_JOIN_TIMEOUT" || { stop_bots; return 1; }
-  send_cmd "bench mark join_end"
-
-  protect_bots
-  spread_bots_on_grid "$BOTSWARM_BOTS" "$BOTSWARM_GRID_SPACING" "$SUMMON_FROM_Y"
-  sleep 15
-
-  echo "     warmup ${BOTSWARM_WARMUP_SECONDS}s"
-  sleep "$BOTSWARM_WARMUP_SECONDS"
-  send_cmd "bench reset"
-  send_cmd "bench mark measure_start"
-  echo "     measuring ${BOTSWARM_MEASURE_SECONDS}s"
-  sleep "$BOTSWARM_MEASURE_SECONDS"
-  send_cmd "bench mark measure_end"
-  sleep 2
-  send_cmd "kill @e[type=!minecraft:player]"
-  sleep 3
-  stop_bots
-  return 0
-}
-
-protect_bots() {
-  send_cmd "effect give @a minecraft:resistance infinite 4 true"
-  send_cmd "effect give @a minecraft:saturation infinite 0 true"
-}
-
-run_rct() {
-  local build="$1" profile="$2" out="$3" random_tick_speed="$4" extra="$5" dir
-  dir="$(server_dir "$build" "$profile")"
-  rm -rf "$dir/world" "$dir/world_nether" "$dir/world_the_end"
-  cp -a "$ROOT/work/worlds/botswarm/world" "$dir/world"
-
-  start_server "$dir" "$RCT_XMX" "$out"
-  wait_for_ready "$out" "$BOOT_TIMEOUT" || return 1
-
+prepare_world() {
+  local random_tick_speed="$1"
   send_cmd "gamerule spawn_mobs false"
   send_cmd "gamerule advance_weather false"
   send_cmd "gamerule fall_damage false"
@@ -161,34 +102,73 @@ run_rct() {
   send_cmd "time set midnight"
   send_cmd "weather clear"
   sleep 10
+}
 
-  send_cmd "bench mark join_start"
-  start_bots "$out" "$RCT_BOTS"
-  wait_for_bots "$out" "$RCT_BOTS" "$BOT_JOIN_TIMEOUT" || { stop_bots; return 1; }
-  send_cmd "bench mark join_end"
-
-  protect_bots
-  spread_bots_in_clusters "$RCT_BOTS" "$RCT_CLUSTERS" "$RCT_SEPARATION" "$SUMMON_FROM_Y"
-  sleep 20
-
-  send_cmd "bench mark spawn_start"
-  while read -r cmd; do send_cmd "$cmd"; done < "$ROOT/work/scenarios/rct-summons.txt"
-  if [[ -n "$extra" ]]; then
-    while read -r cmd; do send_cmd "$cmd"; done < "$extra"
-  fi
-  send_cmd "bench mark spawn_end"
-
-  echo "     warmup ${RCT_WARMUP_SECONDS}s"
-  sleep "$RCT_WARMUP_SECONDS"
-  send_cmd "bench reset"
-  send_cmd "bench mark measure_start"
-  echo "     measuring ${RCT_MEASURE_SECONDS}s"
-  sleep "$RCT_MEASURE_SECONDS"
-  send_cmd "bench mark measure_end"
+measure() {
+  local warmup="$1" seconds="$2"
+  echo "     warmup ${warmup}s"
+  sleep "$warmup"
+  send_cmd "ta reset"
+  send_cmd "ta mark measure_start"
+  echo "     measuring ${seconds}s"
+  sleep "$seconds"
+  send_cmd "ta mark measure_end"
   sleep 2
   send_cmd "kill @e[type=!minecraft:player]"
   sleep 3
-  stop_bots
+}
+
+summon_from() {
+  while read -r cmd; do send_cmd "$cmd"; done < "$1"
+}
+
+# fake players come first so their chunks are loaded before the mobs are summoned into them
+run_players() {
+  local build="$1" profile="$2" out="$3" dir
+  dir="$(server_dir "$build" "$profile")"
+  rm -rf "$dir/world" "$dir/world_nether" "$dir/world_the_end"
+  cp -a "$ROOT/work/worlds/players/world" "$dir/world"
+
+  start_server "$dir" "$PLAYERS_XMX" "$out"
+  wait_for_ready "$out" "$BOOT_TIMEOUT" || return 1
+  prepare_world 3
+
+  send_cmd "ta mark join_start"
+  send_cmd "ta fake spawn $PLAYERS_COUNT layout=grid spacing=$PLAYERS_GRID_SPACING origin=0,0 radius=$PLAYERS_WANDER_RADIUS speed=$PLAYERS_SPEED y=$PLAYERS_Y"
+  send_cmd "ta mark join_end"
+  sleep 20
+
+  send_cmd "ta mark spawn_start"
+  summon_from "$ROOT/work/scenarios/players-summons.txt"
+  send_cmd "ta mark spawn_end"
+
+  measure "$PLAYERS_WARMUP_SECONDS" "$PLAYERS_MEASURE_SECONDS"
+  return 0
+}
+
+run_rct() {
+  local build="$1" profile="$2" out="$3" random_tick_speed="$4" extra="$5" dir
+  dir="$(server_dir "$build" "$profile")"
+  rm -rf "$dir/world" "$dir/world_nether" "$dir/world_the_end"
+  cp -a "$ROOT/work/worlds/players/world" "$dir/world"
+
+  start_server "$dir" "$RCT_XMX" "$out"
+  wait_for_ready "$out" "$BOOT_TIMEOUT" || return 1
+  prepare_world "$random_tick_speed"
+
+  send_cmd "ta mark join_start"
+  send_cmd "ta fake spawn $RCT_PLAYERS layout=cluster clusters=$RCT_CLUSTERS separation=$RCT_SEPARATION origin=0,0 radius=$RCT_CLUSTER_RADIUS speed=$PLAYERS_SPEED y=$PLAYERS_Y"
+  send_cmd "ta mark join_end"
+  sleep 20
+
+  send_cmd "ta mark spawn_start"
+  summon_from "$ROOT/work/scenarios/rct-summons.txt"
+  if [[ -n "$extra" ]]; then
+    summon_from "$extra"
+  fi
+  send_cmd "ta mark spawn_end"
+
+  measure "$RCT_WARMUP_SECONDS" "$RCT_MEASURE_SECONDS"
   return 0
 }
 

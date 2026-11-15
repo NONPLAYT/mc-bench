@@ -1,5 +1,9 @@
 # Paper vs Purpur vs Leaf vs DivineMC on a Ryzen 9 9950X3D
 
+> Measured with SoulFire bots, before mc-bench switched to in-process fake players
+> (November 2026). The `botswarm` scenario is now `players`; numbers from the two are
+> not comparable.
+
 Minecraft 26.2, measured 2026-09-12. Five runs per cell with a 90 s cooldown
 between runs, and the matrix order rotated between repeats. The tables give the
 median of the five runs; "spread" is (max-min)/median over those five. Paper

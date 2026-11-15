@@ -14,7 +14,7 @@ for build in "${BUILDS[@]}"; do
   start_server "$dir" "2048M" "$out"
   if wait_for_ready "$out" "$BOOT_TIMEOUT"; then
     sleep 20
-    send_cmd "bench mark prime"
+    send_cmd "ta mark prime"
     boot_ms=$(( $(cat "$out/ready") - $(grep -o '"enableEpochMs": [0-9]*' "$out/agent-meta.json" 2>/dev/null | grep -o '[0-9]*' || echo 0) ))
     echo "   ready"
   else

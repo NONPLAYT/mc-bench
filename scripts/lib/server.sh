@@ -9,8 +9,9 @@ provision_server() {
   local jarvar="JAR_${build}"
   ln -sfn "$ROOT/jars/${!jarvar}" "$dir/server.jar"
   echo "eula=true" > "$dir/eula.txt"
-  cp "$ROOT/jars/BenchAgent.jar" "$dir/plugins/"
   cp "$ROOT/jars/Chunky.jar" "$dir/plugins/"
+  # built against this exact server: the fake players use its Mojang-mapped internals
+  python3 "$ROOT/scripts/mcs.py" agent "$dir" >/dev/null
 }
 
 start_server() {
@@ -37,8 +38,8 @@ start_server() {
   ( cd "$dir" && exec ${pin[@]+"${pin[@]}"} java \
       "-Xms$xmx" "-Xmx$xmx" \
       "${JVM_FLAGS_COMMON[@]}" \
-      "-Dbench.out=$outdir" \
-      "-Dbench.capacity=$((20 * 60 * 150))" \
+      "-Dtestagent.out=$outdir" \
+      "-Dtestagent.capacity=$((20 * 60 * 150))" \
       -jar server.jar --nogui \
       < "$dir/stdin.fifo" > "$SERVER_LOG" 2>&1 ) &
   SERVER_PID=$!
@@ -93,7 +94,7 @@ wait_for_log() {
 
 stop_server() {
   local timeout="${1:-180}" waited=0
-  send_cmd "bench dump" || true
+  send_cmd "ta dump" || true
   sleep 2
   send_cmd "stop" || true
   while kill -0 "$SERVER_PID" 2>/dev/null; do

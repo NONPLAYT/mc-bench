@@ -1,0 +1,40 @@
+@0
+setblock 4 100 4 minecraft:hopper[facing=down]
+setblock 4 99 4 minecraft:chest
+setblock 4 101 4 minecraft:rail
+fill 8 100 8 24 100 8 minecraft:stone
+setblock 16 100 8 minecraft:hopper[facing=down]
+setblock 16 99 8 minecraft:chest
+fill 8 101 8 24 101 8 minecraft:rail
+setblock 7 101 8 minecraft:stone
+setblock 25 101 8 minecraft:stone
+setblock 30 100 4 minecraft:stone
+setblock 30 101 4 minecraft:rail
+setblock 30 102 4 minecraft:hopper[facing=down]{Items:[{Slot:0b,id:"minecraft:stone",count:20}]}
+fill 8 100 16 24 100 16 minecraft:stone
+fill 8 101 16 24 101 16 minecraft:rail
+setblock 7 101 16 minecraft:stone
+setblock 25 101 16 minecraft:stone
+setblock 16 100 16 minecraft:hopper[facing=down]
+setblock 16 99 16 minecraft:chest
+setblock 36 100 4 minecraft:hopper[facing=down]
+setblock 36 99 4 minecraft:chest
+setblock 36 101 20 minecraft:chest{Items:[{Slot:0b,id:"minecraft:clay_ball",count:9}]}
+setblock 36 100 20 minecraft:hopper[facing=down]
+setblock 36 99 20 minecraft:hopper[facing=down]
+setblock 36 98 20 minecraft:chest
+@150
+summon minecraft:chest_minecart 4.5 101.0625 4.5 {Items:[{Slot:0b,id:"minecraft:gravel",count:7}]}
+summon minecraft:chest_minecart 9.5 101.0625 8.5 {Motion:[0.12d,0.0d,0.0d],Items:[{Slot:0b,id:"minecraft:sand",count:64}]}
+summon minecraft:hopper_minecart 9.5 101.0625 16.5 {Motion:[0.12d,0.0d,0.0d],Items:[{Slot:0b,id:"minecraft:apple",count:30}]}
+@200
+summon minecraft:chest_minecart 30.5 101.0625 4.5
+@260
+summon minecraft:item 36.5 101.5 4.5 {Item:{id:"minecraft:gold_ingot",count:3}}
+@330
+summon minecraft:item 36.5 104.5 4.5 {Item:{id:"minecraft:iron_ingot",count:3}}
+summon minecraft:item 14.5 101.5 16.5 {Item:{id:"minecraft:bread",count:6}}
+@400
+kill @e[type=minecraft:chest_minecart,x=4,y=101,z=4,distance=..2]
+@430
+summon minecraft:hopper_minecart 4.5 101.0625 4.5 {Items:[{Slot:0b,id:"minecraft:flint",count:5}]}

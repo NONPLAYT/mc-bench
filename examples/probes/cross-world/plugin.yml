@@ -1,0 +1,8 @@
+name: PwtProbe
+version: 1.0.0
+main: probe.PwtProbe
+api-version: '1.21'
+commands:
+  pp:
+    description: pwt probe
+    usage: /pp <arm|mode X [every]|reset|stats>
